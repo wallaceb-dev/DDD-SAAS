@@ -1,6 +1,7 @@
 <?php
 
 use App\Domain\Subscription\Entities\Subscription;
+use App\Domain\Subscription\Events\SubscriptionActivated;
 
 beforeEach(function () {
     $this->subscription = Subscription::create(
@@ -50,3 +51,12 @@ it("cannot mark a canceled subscription as delinquent", function () {
     $this->subscription->cancel();
     $this->subscription->markDelinquent();
 })->throws(DomainException::class);
+
+it("records and event when a subscription is activated", function () {
+    $this->subscription->activate();
+    
+    $events = $this->subscription->pullEvents();
+
+    expect($events)->toHaveCount(1);
+    expect($events[0])->toBeInstanceOf(SubscriptionActivated::class);
+});
