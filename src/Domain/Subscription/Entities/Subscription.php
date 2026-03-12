@@ -2,6 +2,7 @@
 
 namespace App\Domain\Subscription\Entities;
 
+use App\Domain\Subscription\Events\SubscriptionActivated;
 use App\Domain\Subscription\ValueObjects\SubscriptionStatus;
 use DomainException;
 
@@ -11,7 +12,8 @@ class Subscription
         private string $id,
         private string $customerId,
         private string $planId,
-        private SubscriptionStatus $status
+        private SubscriptionStatus $status,
+        private array $domainEvents = []
     ) {
     }
 
@@ -40,6 +42,10 @@ class Subscription
         }
 
         $this->status = SubscriptionStatus::active();
+
+        $this->recordEvent(
+            new SubscriptionActivated($this->id)
+        );
     }
 
     public function cancel(): void
@@ -58,5 +64,19 @@ class Subscription
         }
 
         $this->status = SubscriptionStatus::delinquent();
+    }
+
+    private function recordEvent(object $event): void
+    {
+        $this->domainEvents[] = $event;
+    }
+
+    public function pullEvents(): array
+    {
+        $events = $this->domainEvents;
+
+        $this->domainEvents = [];
+
+        return $events;
     }
 }
