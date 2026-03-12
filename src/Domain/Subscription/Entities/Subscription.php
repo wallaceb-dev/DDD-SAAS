@@ -28,21 +28,6 @@ class Subscription
         );
     }
 
-    public function id(): string
-    {
-        return $this->id;
-    }
-
-    public function userId(): string
-    {
-        return $this->customerId;
-    }
-
-    public function planId(): string
-    {
-        return $this->planId;
-    }
-
     public function status(): SubscriptionStatus
     {
         return $this->status;
@@ -55,5 +40,23 @@ class Subscription
         }
 
         $this->status = SubscriptionStatus::active();
+    }
+
+    public function cancel(): void
+    {
+        if ($this->status->value() === "canceled") {
+            throw new DomainException("Subscription already canceled");
+        }
+
+        $this->status = SubscriptionStatus::canceled();
+    }
+
+    public function markDelinquent(): void
+    {
+        if ($this->status->value() !== "active") {
+            throw new DomainException("Only active subscription can become delinquent");
+        }
+
+        $this->status = SubscriptionStatus::delinquent();
     }
 }
