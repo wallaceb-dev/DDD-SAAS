@@ -2,27 +2,51 @@
 
 use App\Domain\Subscription\Entities\Subscription;
 
-it("activates a pending subscription", function () {
-    $subscription = Subscription::create(
+beforeEach(function () {
+    $this->subscription = Subscription::create(
         id: "sub_123",
         customerId: "cus_123",
         planId: "plan_123",
     );
+});
 
-    $subscription->activate();
+it("activates a pending subscription", function () {
+    $this->subscription->activate();
 
-    expect($subscription->status()->value())->toBe("active");
+    expect($this->subscription->status()->value())
+        ->toBe("active");
 });
 
 it("cannot activate an active subscription", function () {
-    $subscription = Subscription::create(
-        id: "sub_123",
-        customerId: "cus_123",
-        planId: "plan_123",
-    );
+    $this->subscription->activate();
+    $this->subscription->activate();
+})->throws(DomainException::class);
 
-    $subscription->activate();
+it("it cancels an active subscription", function () {
+    $this->subscription->activate();
+    $this->subscription->cancel();
 
-    $subscription->activate();
+    expect($this->subscription->status()->value())
+        ->toBe("canceled");
+});
 
-})->throws(DomainException::class, "Subscription is already active");
+it("cancels a delinquent subscription", function () {
+    $this->subscription->activate();
+    $this->subscription->markDelinquent();
+    $this->subscription->cancel();
+
+    expect($this->subscription->status()->value())
+        ->toBe("canceled");
+});
+
+it("cannot cancel an already canceled subscription", function () {
+    $this->subscription->activate();
+    $this->subscription->cancel();
+    $this->subscription->cancel();
+})->throws(DomainException::class);
+
+it("cannot mark a canceled subscription as delinquent", function () {
+    $this->subscription->activate();
+    $this->subscription->cancel();
+    $this->subscription->markDelinquent();
+})->throws(DomainException::class);
