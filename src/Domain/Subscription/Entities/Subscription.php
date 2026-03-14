@@ -3,6 +3,8 @@
 namespace App\Domain\Subscription\Entities;
 
 use App\Domain\Subscription\Events\SubscriptionActivated;
+use App\Domain\Subscription\Events\SubscriptionBecameDelinquent;
+use App\Domain\Subscription\Events\SubscriptionCanceled;
 use App\Domain\Subscription\ValueObjects\SubscriptionStatus;
 use DomainException;
 
@@ -55,6 +57,10 @@ class Subscription
         }
 
         $this->status = SubscriptionStatus::canceled();
+
+        $this->recordEvent(
+            new SubscriptionCanceled($this->id)
+        );
     }
 
     public function markDelinquent(): void
@@ -64,6 +70,10 @@ class Subscription
         }
 
         $this->status = SubscriptionStatus::delinquent();
+
+        $this->recordEvent(
+            new SubscriptionBecameDelinquent($this->id)
+        );
     }
 
     private function recordEvent(object $event): void
