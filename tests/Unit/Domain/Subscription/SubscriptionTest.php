@@ -4,10 +4,11 @@ use App\Domain\Subscription\Entities\Subscription;
 use App\Domain\Subscription\Events\SubscriptionActivated;
 use App\Domain\Subscription\Events\SubscriptionBecameDelinquent;
 use App\Domain\Subscription\Events\SubscriptionCanceled;
+use App\Domain\Subscription\ValueObjects\SubscriptionId;
 
 beforeEach(function () {
     $this->subscription = Subscription::create(
-        id: "sub_123",
+        id: SubscriptionId::fromString('sub_1'),
         customerId: "cus_123",
         planId: "plan_123",
     );
@@ -56,7 +57,7 @@ it("cannot mark a canceled subscription as delinquent", function () {
 
 it("records an event when a subscription is activated", function () {
     $this->subscription->activate();
-    
+
     $events = $this->subscription->pullEvents();
 
     expect($events)->toHaveCount(1);
@@ -65,7 +66,7 @@ it("records an event when a subscription is activated", function () {
 
 it("records an event when a subscription is canceled", function () {
     $this->subscription->cancel();
-    
+
     $events = $this->subscription->pullEvents();
 
     expect($events)->toHaveCount(1);
@@ -75,7 +76,7 @@ it("records an event when a subscription is canceled", function () {
 it("records an event when a subscription is marked as delinquent", function () {
     $this->subscription->activate();
     $this->subscription->markDelinquent();
-    
+
     $events = $this->subscription->pullEvents();
 
     expect($events)->toHaveCount(2);

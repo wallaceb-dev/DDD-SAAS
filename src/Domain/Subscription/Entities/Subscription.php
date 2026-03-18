@@ -5,13 +5,14 @@ namespace App\Domain\Subscription\Entities;
 use App\Domain\Subscription\Events\SubscriptionActivated;
 use App\Domain\Subscription\Events\SubscriptionBecameDelinquent;
 use App\Domain\Subscription\Events\SubscriptionCanceled;
+use App\Domain\Subscription\ValueObjects\SubscriptionId;
 use App\Domain\Subscription\ValueObjects\SubscriptionStatus;
 use DomainException;
 
 class Subscription
 {
     private function __construct(
-        private string $id,
+        private SubscriptionId $id,
         private string $customerId,
         private string $planId,
         private SubscriptionStatus $status,
@@ -20,7 +21,7 @@ class Subscription
     }
 
     public static function create(
-        string $id,
+        SubscriptionId $id,
         string $customerId,
         string $planId
     ): self {
@@ -46,7 +47,7 @@ class Subscription
         $this->status = SubscriptionStatus::active();
 
         $this->recordEvent(
-            new SubscriptionActivated($this->id)
+            new SubscriptionActivated($this->id->value())
         );
     }
 
@@ -59,7 +60,7 @@ class Subscription
         $this->status = SubscriptionStatus::canceled();
 
         $this->recordEvent(
-            new SubscriptionCanceled($this->id)
+            new SubscriptionCanceled($this->id->value())
         );
     }
 
@@ -72,7 +73,7 @@ class Subscription
         $this->status = SubscriptionStatus::delinquent();
 
         $this->recordEvent(
-            new SubscriptionBecameDelinquent($this->id)
+            new SubscriptionBecameDelinquent($this->id->value())
         );
     }
 
