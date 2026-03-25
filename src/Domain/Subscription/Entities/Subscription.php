@@ -5,6 +5,7 @@ namespace App\Domain\Subscription\Entities;
 use App\Domain\Subscription\Events\SubscriptionActivated;
 use App\Domain\Subscription\Events\SubscriptionBecameDelinquent;
 use App\Domain\Subscription\Events\SubscriptionCanceled;
+use App\Domain\Subscription\ValueObjects\CustomerId;
 use App\Domain\Subscription\ValueObjects\SubscriptionId;
 use App\Domain\Subscription\ValueObjects\SubscriptionStatus;
 use DomainException;
@@ -13,7 +14,7 @@ class Subscription
 {
     private function __construct(
         private SubscriptionId $id,
-        private string $customerId,
+        private CustomerId $customerId,
         private string $planId,
         private SubscriptionStatus $status,
         private array $domainEvents = []
@@ -22,7 +23,7 @@ class Subscription
 
     public static function create(
         SubscriptionId $id,
-        string $customerId,
+        CustomerId $customerId,
         string $planId
     ): self {
         return new self(

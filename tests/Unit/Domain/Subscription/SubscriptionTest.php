@@ -4,12 +4,13 @@ use App\Domain\Subscription\Entities\Subscription;
 use App\Domain\Subscription\Events\SubscriptionActivated;
 use App\Domain\Subscription\Events\SubscriptionBecameDelinquent;
 use App\Domain\Subscription\Events\SubscriptionCanceled;
+use App\Domain\Subscription\ValueObjects\CustomerId;
 use App\Domain\Subscription\ValueObjects\SubscriptionId;
 
 beforeEach(function () {
     $this->subscription = Subscription::create(
         id: SubscriptionId::fromString('sub_1'),
-        customerId: "cus_123",
+        customerId: CustomerId::fromString('cus_1'),
         planId: "plan_123",
     );
 });
