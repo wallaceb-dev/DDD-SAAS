@@ -35,6 +35,11 @@ class Subscription
         );
     }
 
+    public function id(): SubscriptionId
+    {
+        return $this->id;
+    }
+
     public function status(): SubscriptionStatus
     {
         return $this->status;
