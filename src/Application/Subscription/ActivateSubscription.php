@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Application\Subscription;
+
 use App\Domain\Subscription\Repositories\SubscriptionRepository;
 use App\Domain\Subscription\ValueObjects\SubscriptionId;
 
