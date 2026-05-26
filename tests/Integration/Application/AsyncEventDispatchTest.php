@@ -40,17 +40,14 @@ it('processes events asynchronously', function () {
 
     ob_start();
 
-    // dispara evento (vai pra fila)
     $useCase->execute('sub_1');
 
-    // nada aconteceu ainda
     $outputBefore = ob_get_clean();
 
     expect($outputBefore)->toBeEmpty();
 
     ob_start();
-
-    // worker processa
+    
     $worker->run();
 
     $outputAfter = ob_get_clean();
