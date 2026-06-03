@@ -9,6 +9,7 @@ use App\Domain\Subscription\ValueObjects\CustomerId;
 use App\Domain\Subscription\ValueObjects\PlanId;
 use App\Domain\Subscription\ValueObjects\SubscriptionId;
 use App\Domain\Subscription\ValueObjects\SubscriptionStatus;
+use DateTimeImmutable;
 use DomainException;
 
 class Subscription
@@ -18,6 +19,7 @@ class Subscription
         private CustomerId $customerId,
         private PlanId $planId,
         private SubscriptionStatus $status,
+        private ?DateTimeImmutable $gracePeriodUntil = null,
         private array $domainEvents = []
     ) {
     }
@@ -84,9 +86,23 @@ class Subscription
         );
     }
 
+    public function handlePaymentFailure(DateTimeImmutable $failedAt): void
+    {
+        if (!$this->status->isActive()) {
+            throw new DomainException("Subscription must be active to handle payment failure");
+        }
+
+        $this->gracePeriodUntil = $failedAt->modify('+5 days');
+    }
+
     private function recordEvent(object $event): void
     {
         $this->domainEvents[] = $event;
+    }
+
+    public function getGracePeriodUntil(): ?DateTimeImmutable
+    {
+        return $this->gracePeriodUntil;
     }
 
     public function pullEvents(): array
