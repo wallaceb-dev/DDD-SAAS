@@ -73,10 +73,14 @@ class Subscription
         );
     }
 
-    public function markDelinquent(): void
+    public function markDelinquent(DateTimeImmutable $checkDate): void
     {
         if ($this->status->value() !== "active") {
             throw new DomainException("Only active subscription can become delinquent");
+        }
+
+        if ($this->gracePeriodUntil !== null && $checkDate < $this->gracePeriodUntil) {
+            throw new DomainException("Cannot mark as delinquent before grace period expires");
         }
 
         $this->status = SubscriptionStatus::delinquent();

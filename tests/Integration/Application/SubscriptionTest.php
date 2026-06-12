@@ -15,12 +15,6 @@ beforeEach(function () {
 
 
 it('should enter grace period on payment failure but keep status active', function () {
-    $this->subscription = Subscription::create(
-        id: SubscriptionId::fromString('sub_1'),
-        customerId: CustomerId::fromString('cus_1'),
-        planId: PlanId::fromString('plan_1'),
-    );
-
     $this->subscription->activate();
 
     $failedAt = new DateTimeImmutable('2026-06-03 10:00:00');
@@ -37,4 +31,28 @@ it('should throw exception when handling payment failure on non active subscript
 
     expect(fn() => $this->subscription->handlePaymentFailure($failedAt))
         ->toThrow(DomainException::class, "Subscription must be active to handle payment failure");
+});
+
+test('should not allow marking as delinquent if grace period has not expired yet', function () {
+
+    $this->subscription->activate();
+
+    $this->subscription->handlePaymentFailure(new DateTimeImmutable('2026-06-01 10:00:00'));
+
+    $checkDate = new DateTimeImmutable('2026-06-04 10:00:00');
+
+    expect(fn() => $this->subscription->markDelinquent($checkDate))
+        ->toThrow(DomainException::class, "Cannot mark as delinquent before grace period expires");
+});
+
+test('should allow marking as delinquent if grace period has expired', function () {
+    $this->subscription->activate();
+
+    $this->subscription->handlePaymentFailure(new DateTimeImmutable('2026-06-01 10:00:00'));
+
+    $checkDate = new DateTimeImmutable('2026-07-07 10:00:00');
+
+    $this->subscription->markDelinquent($checkDate);
+
+    expect($this->subscription->status()->isDelinquent())->toBeTrue();
 });
