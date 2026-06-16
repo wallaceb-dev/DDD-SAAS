@@ -49,7 +49,11 @@ class Subscription
 
     public function activate(): void
     {
-        if ($this->status->value() !== 'pending') {
+        if ($this->status->isCanceled()) {
+            throw new DomainException("A canceled subscription cannot be activated");
+        }
+
+        if ($this->status->isActive()) {
             throw new DomainException("Subscription is already active");
         }
 
@@ -97,6 +101,21 @@ class Subscription
         }
 
         $this->gracePeriodUntil = $failedAt->modify('+5 days');
+    }
+
+    public function handlePaymentSuccess(): void
+    {
+        if ($this->status->value() === 'canceled') {
+            throw new DomainException("A canceled subscription cannot change status");
+        }
+
+        if ($this->status->value() === 'delinquent') {
+            $this->activate();
+        }
+
+        if ($this->status->value() === 'active' && $this->gracePeriodUntil !== null) {
+            $this->gracePeriodUntil = null;
+        }
     }
 
     private function recordEvent(object $event): void
