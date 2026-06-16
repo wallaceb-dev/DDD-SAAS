@@ -56,3 +56,26 @@ test('should allow marking as delinquent if grace period has expired', function 
 
     expect($this->subscription->status()->isDelinquent())->toBeTrue();
 });
+
+test('should clear grace period on payment success if subscription is active', function () {
+    $this->subscription->activate();
+
+    $this->subscription->handlePaymentFailure(new DateTimeImmutable('2026-06-01 10:00:00'));
+
+    $this->subscription->handlePaymentSuccess();
+
+    expect($this->subscription->status()->isActive())->toBeTrue();
+    expect($this->subscription->getGracePeriodUntil())->toBeNull();
+});
+
+test('should reactivate subscription and clear grace period on payment success if delinquent', function () {
+    $this->subscription->activate();
+
+    $this->subscription->handlePaymentFailure(new DateTimeImmutable('2026-06-01 10:00:00'));
+    $this->subscription->markDelinquent(new DateTimeImmutable('2026-06-07 10:00:00'));
+
+    $this->subscription->handlePaymentSuccess();
+
+    expect($this->subscription->status()->isActive())->toBeTrue();
+    expect($this->subscription->getGracePeriodUntil())->toBeNull();
+});

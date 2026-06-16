@@ -28,7 +28,7 @@ it("cannot activate an active subscription", function () {
     $this->subscription->activate();
 })->throws(DomainException::class);
 
-it("it cancels an active subscription", function () {
+it("cancels an active subscription", function () {
     $this->subscription->activate();
     $this->subscription->cancel();
 
@@ -38,7 +38,7 @@ it("it cancels an active subscription", function () {
 
 it("cancels a delinquent subscription", function () {
     $this->subscription->activate();
-    $this->subscription->markDelinquent();
+    $this->subscription->markDelinquent(new DateTimeImmutable('now'));
     $this->subscription->cancel();
 
     expect($this->subscription->status()->value())
@@ -54,7 +54,7 @@ it("cannot cancel an already canceled subscription", function () {
 it("cannot mark a canceled subscription as delinquent", function () {
     $this->subscription->activate();
     $this->subscription->cancel();
-    $this->subscription->markDelinquent();
+    $this->subscription->markDelinquent(new DateTimeImmutable('now'));
 })->throws(DomainException::class);
 
 it("records an event when a subscription is activated", function () {
@@ -77,7 +77,7 @@ it("records an event when a subscription is canceled", function () {
 
 it("records an event when a subscription is marked as delinquent", function () {
     $this->subscription->activate();
-    $this->subscription->markDelinquent();
+    $this->subscription->markDelinquent(new DateTimeImmutable('now'));
 
     $events = $this->subscription->pullEvents();
 
